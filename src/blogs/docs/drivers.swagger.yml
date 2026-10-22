@@ -1,0 +1,232 @@
+tags:
+  - name: Drivers
+    description: API for managing drivers (JSON:API format)
+
+paths:
+  /api/drivers:
+    get:
+      summary: Get a list of all drivers
+      tags: [Drivers]
+      security:
+        - BasicAuth: []
+      responses:
+        200:
+          description: List of all drivers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverListOutput'
+    post:
+      summary: Add a new driver
+      tags: [Drivers]
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverCreateInput'
+      responses:
+        201:
+          description: The driver was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverOutput'
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /api/drivers/{id}:
+    get:
+      summary: Get a driver by ID
+      tags: [Drivers]
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: 'The unique identifier of the driver'
+          schema:
+            type: string
+            example: '2'
+      responses:
+        200:
+          description: The requested driver
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverOutput'
+        404:
+          description: Driver not found
+    put:
+      summary: Update a driver by ID
+      tags: [Drivers]
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: 'The unique identifier of the driver'
+          schema:
+            type: string
+            example: '2'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverUpdateInput'
+      responses:
+        204:
+          description: Driver updated successfully
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        404:
+          description: Driver not found
+    delete:
+      summary: Delete a driver by ID
+      tags: [Drivers]
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: 'The unique identifier of the driver'
+          schema:
+            type: string
+            example: '2'
+      responses:
+        204:
+          description: Driver deleted successfully
+        404:
+          description: Driver not found
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    # Плоские атрибуты водителя (data.attributes).
+    DriverAttributes:
+      type: object
+      required:
+        - name
+        - phoneNumber
+        - email
+        - vehicleMake
+        - vehicleModel
+        - vehicleYear
+        - vehicleLicensePlate
+        - vehicleFeatures
+      properties:
+        name:
+          type: string
+          example: 'Tom Rider'
+        phoneNumber:
+          type: string
+          example: '123-456-7890'
+        email:
+          type: string
+          example: 'tom.rider@example.com'
+        vehicleMake:
+          type: string
+          example: 'Toyota'
+        vehicleModel:
+          type: string
+          example: 'Camry'
+        vehicleYear:
+          type: integer
+          example: 2020
+        vehicleLicensePlate:
+          type: string
+          example: 'XYZ 1234'
+        vehicleDescription:
+          type: string
+          nullable: true
+          example: 'A spacious SUV with leather seats and a sunroof'
+        vehicleFeatures:
+          type: array
+          items:
+            type: string
+            enum: [wi-fi, child-seat, pet-friendly]
+          example: ['wi-fi', 'pet-friendly']
+    # JSON:API-ресурс водителя в ответе.
+    DriverResource:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [drivers]
+        id:
+          type: string
+          example: '2'
+        attributes:
+          $ref: '#/components/schemas/DriverAttributes'
+    DriverCreateInput:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [drivers]
+            attributes:
+              $ref: '#/components/schemas/DriverAttributes'
+    DriverUpdateInput:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [drivers]
+            id:
+              type: string
+              example: '2'
+            attributes:
+              $ref: '#/components/schemas/DriverAttributes'
+    DriverOutput:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/DriverResource'
+    DriverListOutput:
+      type: object
+      properties:
+        meta:
+          type: object
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriverResource'
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: 'data.attributes.name'
+        message:
+          type: string
+          example: 'Invalid name'
+    ValidationErrorResponse:
+      type: object
+      properties:
+        errorMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
