@@ -29,7 +29,7 @@ export const db = {
       shortDescription: 'About everything1',
       content: 'Something-something1',
       blogId: 1,
-      blogName: 'AW1',
+      blogName: 'Gexodus',
     },
     {
       id: 5,
@@ -37,7 +37,7 @@ export const db = {
       shortDescription: 'About everything2',
       content: 'Something-something1',
       blogId: 2,
-      blogName: 'AW2',
+      blogName: 'Adeptus',
     },
     {
       id: 6,
@@ -45,7 +45,7 @@ export const db = {
       shortDescription: 'About everything3',
       content: 'Something-something3',
       blogId: 3,
-      blogName: 'AW3',
+      blogName: 'Morozov',
     },
   ],
 };
