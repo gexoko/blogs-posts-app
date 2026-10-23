@@ -1,0 +1,129 @@
+paths:
+  /ht_02/api/blogs:
+    get:
+      operationId: getBlogs
+      summary: Получить список блогов
+      tags: [Blogs]
+      security: []
+      responses:
+        '200':
+          description: Массив ресурсов; при отсутствии данных — пустой массив.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlogViewModel'
+    post:
+      operationId: createBlog
+      summary: Создать блог
+      tags: [Blogs]
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogInputModel'
+      responses:
+        '201':
+          description: Ресурс создан.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogViewModel'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /ht_02/api/blogs/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+    get:
+      operationId: getBlogById
+      summary: Получить блог по id
+      tags: [Blogs]
+      security: []
+      responses:
+        '200':
+          description: Найденный ресурс.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogViewModel'
+        '404':
+          $ref: '#/components/responses/NotFoundText'
+    put:
+      operationId: updateBlog
+      summary: Обновить блог
+      tags: [Blogs]
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogInputModel'
+      responses:
+        '204':
+          description: Ресурс обновлён; тело ответа отсутствует.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      operationId: deleteBlog
+      summary: Удалить блог
+      tags: [Blogs]
+      security:
+        - BasicAuth: []
+      responses:
+        '204':
+          description: Ресурс удалён; тело ответа отсутствует.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+components:
+  schemas:
+    BlogInputModel:
+      type: object
+      description: |
+        Все поля обязательны и при создании, и при обновлении.
+        Пробелы по краям текстовых полей удаляются перед проверкой длины.
+        Лишние поля, включая id, игнорируются.
+      required: [name, description, websiteUrl]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 15
+          example: Gexodus
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: Блог о разработке
+        websiteUrl:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: '^https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*/?$'
+          example: https://example.com
+    BlogViewModel:
+      allOf:
+        - $ref: '#/components/schemas/BlogInputModel'
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              readOnly: true
+              example: '1'

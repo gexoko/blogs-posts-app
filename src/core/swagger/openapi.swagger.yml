@@ -1,13 +1,68 @@
-openapi: 3.0.0
-info:
-  title: Uber API
-  version: 1.0.0
-  description: Uber API documentation
-
 tags:
+  - name: Blogs
+    description: Управление блогами
+  - name: Posts
+    description: Управление постами
   - name: Testing
-    description: API for clearing the database
-  - name: Drivers
-    description: API for managing drivers
-  - name: Rides
-    description: API for managing rides
+    description: Очистка тестовых данных
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Логин и пароль администратора задаются ADMIN_USERNAME и ADMIN_PASSWORD.
+  parameters:
+    ResourceId:
+      in: path
+      name: id
+      required: true
+      description: Строковый идентификатор ресурса (в хранилище используется число).
+      schema:
+        type: string
+        example: '1'
+  schemas:
+    ValidationError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          example: name
+        message:
+          type: string
+          example: name cannot be empty
+    ValidationErrorResponse:
+      type: object
+      required: [errorMessages]
+      properties:
+        errorMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+  responses:
+    BadRequest:
+      description: Ошибка входных данных; не более одной ошибки на поле.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    Unauthorized:
+      description: Отсутствуют или неверны учётные данные Basic Auth.
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: Unauthorized
+    NotFoundText:
+      description: Ресурс не найден.
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: Not Found
+    NotFoundError:
+      description: Ресурс не найден; поле ошибки — id.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'

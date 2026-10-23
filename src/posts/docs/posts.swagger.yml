@@ -1,0 +1,141 @@
+paths:
+  /ht_02/api/posts:
+    get:
+      operationId: getPosts
+      summary: Получить список постов
+      tags: [Posts]
+      security: []
+      responses:
+        '200':
+          description: Массив ресурсов; при отсутствии данных — пустой массив.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostViewModel'
+    post:
+      operationId: createPost
+      summary: Создать пост
+      tags: [Posts]
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostInputModel'
+      responses:
+        '201':
+          description: Ресурс создан.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostViewModel'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /ht_02/api/posts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+    get:
+      operationId: getPostById
+      summary: Получить пост по id
+      tags: [Posts]
+      security: []
+      responses:
+        '200':
+          description: Найденный ресурс.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostViewModel'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundText'
+    put:
+      operationId: updatePost
+      summary: Обновить пост
+      description: Блог должен существовать. При смене blogId обновляется и blogName.
+      tags: [Posts]
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostInputModel'
+      responses:
+        '204':
+          description: Ресурс обновлён; тело ответа отсутствует.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      operationId: deletePost
+      summary: Удалить пост
+      tags: [Posts]
+      security:
+        - BasicAuth: []
+      responses:
+        '204':
+          description: Ресурс удалён; тело ответа отсутствует.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+components:
+  schemas:
+    PostInputModel:
+      type: object
+      description: |
+        Все поля обязательны и при создании, и при обновлении.
+        Пробелы по краям текстовых полей удаляются перед проверкой длины.
+        Лишние поля, включая id и blogName, игнорируются.
+        blogId должен быть числовой строкой и ссылаться на существующий блог.
+      required: [title, shortDescription, content, blogId]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 30
+          example: Первый пост
+        shortDescription:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Коротко о проекте
+        content:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Создаём API блогов и постов.
+        blogId:
+          type: string
+          description: Числовая строка с id существующего блога.
+          example: '1'
+    PostViewModel:
+      allOf:
+        - $ref: '#/components/schemas/PostInputModel'
+        - type: object
+          required: [id, blogName]
+          properties:
+            id:
+              type: string
+              readOnly: true
+              example: '4'
+            blogName:
+              type: string
+              readOnly: true
+              description: Имя блога, сохранённое при создании или обновлении поста.
+              example: Gexodus

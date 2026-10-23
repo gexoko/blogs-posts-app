@@ -1,12 +1,11 @@
-tags:
-  - name: Testing
-    description: API for clearing the database
-
 paths:
-  /api/testing/all-data:
+  /ht_02/api/testing/all-data:
     delete:
-      summary: 'Clear database: delete all data from all tables/collections'
+      operationId: clearAllData
+      summary: Удалить все блоги и посты
+      description: Полностью очищает оба массива в памяти. Эндпоинт доступен без авторизации.
       tags: [Testing]
+      security: []
       responses:
-        204:
-          description: All data deleted
+        '204':
+          description: Все данные удалены; тело ответа отсутствует.
