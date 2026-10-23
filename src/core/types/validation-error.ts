@@ -5,4 +5,4 @@ export type ValidationErrorType = {
 };
 
 // Единый формат тела ответа при ошибке валидации.
-export type ValidationErrorDto = { errorMessages: ValidationErrorType[] };
+export type ValidationErrorDto = { errorsMessages: ValidationErrorType[] };

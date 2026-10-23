@@ -50,11 +50,11 @@ export async function createPost(
 
 export function expectFieldErrors(body: unknown, fields: string[]) {
   expect(body).toEqual({
-    errorMessages: expect.arrayContaining(
+    errorsMessages: expect.arrayContaining(
       fields.map((field) => ({ field, message: expect.any(String) })),
     ),
   });
-  expect((body as { errorMessages: unknown[] }).errorMessages).toHaveLength(
+  expect((body as { errorsMessages: unknown[] }).errorsMessages).toHaveLength(
     fields.length,
   );
 }

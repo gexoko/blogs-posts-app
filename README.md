@@ -154,7 +154,7 @@ Authorization: Basic <base64 от строки username:password>
 
 ```json
 {
-  "errorMessages": [
+  "errorsMessages": [
     {
       "field": "blogId",
       "message": "Blog not found"
