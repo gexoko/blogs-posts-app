@@ -4,18 +4,23 @@ import { blogsRepository } from '../../repositories/blogs.repository';
 import { BlogInputModel } from '../../dto/BlogInputModel';
 import { mapBlogToResource } from '../mappers/map-blog-to-output';
 
-export function createBlogHandler(
+export async function createBlogHandler(
   req: Request<{}, {}, BlogInputModel>,
   res: Response,
 ) {
   // Тело уже проверено middleware-валидаторами. Данные лежат в body.
+  try {
+    const mappedBody = {
+      name: req.body.name,
+      description: req.body.description,
+      websiteUrl: req.body.websiteUrl,
+      createdAt: new Date(),
+      isMembership: false,
+    };
 
-  const mappedBody = {
-    name: req.body.name,
-    description: req.body.description,
-    websiteUrl: req.body.websiteUrl,
-  };
-
-  const createdBlog = blogsRepository.create(mappedBody);
-  res.status(HttpStatus.Created).send(mapBlogToResource(createdBlog));
+    const createdBlog = await blogsRepository.create(mappedBody);
+    res.status(HttpStatus.Created).send(mapBlogToResource(createdBlog));
+  } catch {
+    res.sendStatus(HttpStatus.InternalServerError);
+  }
 }

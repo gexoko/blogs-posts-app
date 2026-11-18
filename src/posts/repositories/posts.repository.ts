@@ -1,51 +1,37 @@
-import { db } from '../../db/in-memory.db';
 import { Post } from '../types/post';
-import { PostInputModel } from '../dto/PostInputModel';
+import { postCollection } from '../../db/collections';
+import { ObjectId, WithId } from 'mongodb';
 
 // Репозиторий (DAL) отвечает ТОЛЬКО за доступ к данным поездок в in-memory-хранилище.
 export const postsRepository = {
-  findAll(): Post[] {
-    return db.posts;
+  async findAll(): Promise<WithId<Post>[]> {
+    return postCollection.find().toArray();
   },
 
-  findById(id: number): Post | null {
-    return db.posts.find((p) => p.id === id) ?? null;
+  async findById(id: string): Promise<WithId<Post> | null> {
+    return postCollection.findOne({ _id: new ObjectId(id) });
   },
 
-  // Принимает доменные поля без id (id генерируем здесь) и возвращает созданную поездку.
-  create(newPost: Omit<Post, 'id'>): Post {
-    const lastPost = db.posts[db.posts.length - 1];
-    const created: Post = {
-      id: lastPost ? lastPost.id + 1 : 1,
-      ...newPost,
-    };
-
-    db.posts.push(created);
-    return created;
-  },
-  // Принимает доменные поля (без служебного id).
-  // Возвращает true, если водитель найден и обновлён, иначе false.
-  update(id: number, post: Omit<Post, 'id'>): boolean {
-    const index = db.posts.findIndex((b) => b.id === id);
-
-    if (index === -1) {
-      return false;
-    }
-
-    // Обновляем поля, сохраняя служебное поле id.
-    db.posts[index] = { ...db.posts[index], ...post };
-    return true;
+  async create(newPost: Post): Promise<WithId<Post>> {
+    const insertResult = await postCollection.insertOne(newPost);
+    return { ...newPost, _id: insertResult.insertedId };
   },
 
-  // Возвращает true, если водитель найден и удалён, иначе false.
-  delete(id: number): boolean {
-    const index = db.posts.findIndex((b) => b.id === id);
+  async update(id: string, post: Omit<Post, 'createdAt'>): Promise<boolean> {
+    const updateResult = await postCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: post },
+    );
 
-    if (index === -1) {
-      return false;
-    }
+    return updateResult.matchedCount > 0;
+  },
 
-    db.posts.splice(index, 1);
-    return true;
+  // Возвращает true, если блог найден и удалён, иначе false.
+  async delete(id: string): Promise<boolean> {
+    const deleteResult = await postCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    return deleteResult.deletedCount > 0;
   },
 };

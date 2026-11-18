@@ -1,55 +1,41 @@
-import { db } from '../../db/in-memory.db';
-import { BlogViewModel } from '../dto/BlogViewModel';
 import { Blog } from '../types/blog';
+import { ObjectId, WithId } from 'mongodb';
+import { blogCollection } from '../../db/collections';
 
-// Репозиторий (DAL) отвечает ТОЛЬКО за доступ к данным в in-memory-хранилище.
+// Репозиторий отвечает ТОЛЬКО за доступ к данным (CRUD).
 // Он не знает про HTTP и не решает, что делать при "не найдено":
 // операции изменения возвращают boolean, а решение о статусе ответа принимает handler.
 export const blogsRepository = {
-  findAll(): Blog[] {
-    return db.blogs;
+  async findAll(): Promise<WithId<Blog>[]> {
+    return blogCollection.find().toArray();
   },
 
-  findById(id: number): Blog | null {
-    // Если ничего не нашли, find вернёт undefined — приводим к null.
-    return db.blogs.find((b) => b.id === id) ?? null;
+  async findById(id: string): Promise<WithId<Blog> | null> {
+    return blogCollection.findOne({ _id: new ObjectId(id) });
   },
 
-  // Принимает доменные поля без id (id генерируем здесь) и возвращает созданного водителя.
-  create(newBlog: Omit<Blog, 'id'>): Blog {
-    const lastBlog = db.blogs[db.blogs.length - 1];
-    const created: Blog = {
-      id: lastBlog ? +lastBlog.id + 1 : 1,
-      ...newBlog,
-    };
-
-    db.blogs.push(created);
-    return created;
+  async create(newBlog: Blog): Promise<WithId<Blog>> {
+    const insertResult = await blogCollection.insertOne(newBlog);
+    return { ...newBlog, _id: insertResult.insertedId };
   },
 
-  // Принимает доменные поля (без служебного id).
+  // Принимает уже готовый доменный объект (без createdAt) — маппинг из DTO делает handler.
   // Возвращает true, если водитель найден и обновлён, иначе false.
-  update(id: number, blog: Omit<Blog, 'id'>): boolean {
-    const index = db.blogs.findIndex((b) => b.id === id);
+  async update(id: string, blog: Omit<Blog, 'createdAt'>): Promise<boolean> {
+    const updateResult = await blogCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: blog },
+    );
 
-    if (index === -1) {
-      return false;
-    }
-
-    // Обновляем поля, сохраняя служебное поле id.
-    db.blogs[index] = { ...db.blogs[index], ...blog };
-    return true;
+    return updateResult.matchedCount > 0;
   },
 
-  // Возвращает true, если водитель найден и удалён, иначе false.
-  delete(id: number): boolean {
-    const index = db.blogs.findIndex((b) => b.id === id);
+  // Возвращает true, если блог найден и удалён, иначе false.
+  async delete(id: string): Promise<boolean> {
+    const deleteResult = await blogCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
 
-    if (index === -1) {
-      return false;
-    }
-
-    db.blogs.splice(index, 1);
-    return true;
+    return deleteResult.deletedCount > 0;
   },
 };

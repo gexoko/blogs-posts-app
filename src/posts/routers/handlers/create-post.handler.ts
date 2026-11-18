@@ -6,36 +6,39 @@ import { mapPostToResource } from '../mappers/map-post-to-output';
 import { createErrorMessages } from '../../../core/middlewares/validation/input-validation-result.middleware';
 import { blogsRepository } from '../../../blogs/repositories/blogs.repository';
 
-export function createPostHandler(
+export async function createPostHandler(
   req: Request<{}, {}, PostInputModel>,
   res: Response,
 ) {
-  // Тело уже проверено middleware-валидаторами. Данные лежат в body.
+  try {
+    const blog = await blogsRepository.findById(req.body.blogId);
 
-  // Поездку можно создать только для существующего водителя.
-  const blog = blogsRepository.findById(+req.body.blogId);
+    if (!blog) {
+      res
+        .status(HttpStatus.BadRequest)
+        .send(
+          createErrorMessages([{ field: 'blogId', message: 'Blog not found' }]),
+        );
+      return;
+    }
+    const mappedBody = {
+      title: req.body.title,
+      shortDescription: req.body.shortDescription,
+      content: req.body.content,
+      blogId: req.body.blogId,
+      createdAt: new Date(),
+    };
+    // 3. Собираем полный объект для базы данных (добавляем blogName)
+    const newPostData = {
+      ...mappedBody,
+      blogId: blog._id,
+      blogName: blog.name, // Берем имя из найденного блога
+    };
 
-  if (!blog) {
-    res
-      .status(HttpStatus.BadRequest)
-      .send(
-        createErrorMessages([{ field: 'blogId', message: 'Blog not found' }]),
-      );
-    return;
+    const createdPost = await postsRepository.create(newPostData);
+    const postViewModel = mapPostToResource(createdPost);
+    res.status(HttpStatus.Created).send(postViewModel);
+  } catch {
+    res.sendStatus(HttpStatus.InternalServerError);
   }
-  const mappedBody = {
-    title: req.body.title,
-    shortDescription: req.body.shortDescription,
-    content: req.body.content,
-    blogId: req.body.blogId,
-  };
-  // 3. Собираем полный объект для базы данных (добавляем blogName)
-  const newPostData = {
-    ...mappedBody,
-    blogId: +blog.id,
-    blogName: blog.name, // Берем имя из найденного блога
-  };
-
-  const createdPost = postsRepository.create(newPostData);
-  res.status(HttpStatus.Created).send(mapPostToResource(createdPost));
 }

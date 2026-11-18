@@ -20,7 +20,12 @@ export const blogsRouter = Router({});
 blogsRouter
   .get(BLOGS_ROUTES.ROOT, getBlogListHandler)
 
-  .get(BLOGS_ROUTES.BY_ID, idValidation, getBlogHandler)
+  .get(
+    BLOGS_ROUTES.BY_ID,
+    idValidation,
+    inputValidationResultMiddleware,
+    getBlogHandler,
+  )
 
   .post(
     BLOGS_ROUTES.ROOT,

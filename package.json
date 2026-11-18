@@ -8,7 +8,7 @@
   },
   "scripts": {
     "watch": "tsc -w",
-    "dev": "nodemon --inspect dist/index.js",
+    "dev": "nodemon --inspect --env-file=.env dist/index.js",
     "jest": "jest -i",
     "jest:coverage": "jest -i --coverage",
     "lint": "eslint --fix .",
@@ -17,6 +17,7 @@
   "dependencies": {
     "express": "^5.3.0",
     "express-validator": "^7.3.2",
+    "mongodb": "^7.9.0",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
   },

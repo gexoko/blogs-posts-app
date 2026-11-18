@@ -1,10 +1,16 @@
 import { Request, Response } from 'express';
-import { db } from '../../../db/in-memory.db';
 import { HttpStatus } from '../../../core/types/http-statuses';
+import { getAllCollections } from '../../../db/collections';
 
-// Полностью очищает данные (используется в e2e-тестах перед прогоном).
-export function truncateDbHandler(req: Request, res: Response) {
-  db.blogs = [];
-  db.posts = [];
-  res.sendStatus(HttpStatus.NoContent);
+export async function truncateDbHandler(req: Request, res: Response) {
+  try {
+    // Полностью очищаем все коллекции (используется в тестах).
+    await Promise.all(
+      getAllCollections().map((collection) => collection.deleteMany()),
+    );
+
+    res.sendStatus(HttpStatus.NoContent);
+  } catch {
+    res.sendStatus(HttpStatus.InternalServerError);
+  }
 }
