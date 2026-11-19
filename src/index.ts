@@ -10,7 +10,12 @@ const bootstrap = async () => {
 
   await runDB(SETTINGS.MONGO_URL);
 
-  app.listen(PORT, () => {
+  app.listen(PORT, (error) => {
+    if (error) {
+      console.error('Не удалось запустить сервер:', error);
+      return;
+    }
+
     console.log(`Example app listening on port ${PORT}`);
   });
   return app;

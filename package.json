@@ -8,13 +8,14 @@
   },
   "scripts": {
     "watch": "tsc -w",
-    "dev": "nodemon --inspect --env-file=.env dist/index.js",
+    "dev": "nodemon --inspect dist/index.js",
     "jest": "jest -i",
     "jest:coverage": "jest -i --coverage",
     "lint": "eslint --fix .",
     "format": "prettier --write ."
   },
   "dependencies": {
+    "dotenv": "^18.0.10",
     "express": "^5.3.0",
     "express-validator": "^7.3.2",
     "mongodb": "^7.9.0",
